@@ -1,89 +1,56 @@
 
-# Sources
-# https://www.youtube.com/watch?v=xh28F6f-Cds
-
-# Imports
+# Libraries
 import requests
 import json
-import os
 from datetime import datetime
-import time
-import pygame
 
-# Define clear console
-clear = lambda: os.system('cls')
+class EntGetter:
 
-# Initialise pygame
-pygame.init()
-notification = pygame.mixer.Sound('ent-notification.wav')
+	def __init__(self, authorisation):
+		self.authorisation = authorisation
 
-# Retrieve events from discord
-def retrieve_events(authorisation):
+	# Get events from discord
+	def __get_events(self):
 
-	# Define authorisation header
-	headers = {
-		'authorization': authorisation
-	}
+		# Define authorisation header
+		headers = {
+			'authorization': self.authorisation
+		}
 
-	# Request messages from channel
-	r = requests.get('https://discord.com/api/v9/channels/1166753438177173534/messages', headers=headers)
+		# Request messages from channel
+		r = requests.get('https://discord.com/api/v9/channels/1166753438177173534/messages', headers=headers)
 
-	# Get events from JSON
-	events = []
-	messages = json.loads(r.text)
-	for value in messages:
-		events.append([value['content'], value['timestamp']])
-	events.reverse()
+		# Get events from JSON
+		events = []
+		messages = json.loads(r.text)
+		for value in messages:
+			events.append([value['content'], value['timestamp']])
+		events.reverse()
 
-	return events
+		return events
 
-# Print ent locations
-def print_ents(authorisation, old):
+	# Get ent locations
+	def get_ents(self, maxAge=120):
 
-	# Get current time
-	currentTime = datetime.now()
+		# Get current time
+		currentTime = datetime.now()
 
-	# Get events
-	events = retrieve_events(authorisation)
+		# Get events
+		events = self.__get_events()
 
-	# Filter events
-	ents = []
-	for event in events:
-		if event[0][:3] == 'ENT':
-			ents.append(event)
+		# Filter events
+		ents = []
+		for event in events:
+			if event[0][:3] == 'ENT':
+				ents.append(event)
 
-	# Print ent locations
-	clear()
-	print()
-	new = []
-	for ent in ents:
-		location = ent[0].split()[2].replace('*', '')
-		time = datetime.strptime(ent[1].split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
-		timeDifference = (currentTime - time).total_seconds()
-		if (timeDifference < 120):
-			print('   ' + location, int(timeDifference))
-			new.append(ent)
-	print()
+		# Get ent locations
+		locations = []
+		for ent in ents:
+			location = ent[0].split()[2].replace('*', '')
+			time = datetime.strptime(ent[1].split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
+			timeDifference = (currentTime - time).total_seconds()
+			if (timeDifference < maxAge):
+				locations.append([location, time])
 
-	# Play notification sound
-	if (new != old):
-		if (len(new) > len(old)):
-			notification.play()
-
-	return new
-
-# Main
-def main():
-
-	# Get authorisation as input
-	clear()
-	authorisation = input("Authorisation: ")
-	notification.play()
-
-	# Main loop
-	old = []
-	while True:
-		time.sleep(0.5)
-		old = print_ents(authorisation, old)
-
-main()
+		return locations
