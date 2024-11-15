@@ -4,6 +4,7 @@ from EntGetter import EntGetter
 from datetime import datetime
 import pygame
 from tkinter import *
+import threading
 
 # Initialise EntGetter
 entGetter = EntGetter('') # INSERT DISCORD AUTHORISATION HERE
@@ -21,7 +22,7 @@ window.iconbitmap(default='Assets/Images/ent.ico')
 window.configure(background='black')
 
 # Update loop
-def update():
+def updateWindow():
 
     # Get current time
     currentTime = datetime.now()
@@ -36,6 +37,10 @@ def update():
             notification.play()
     previousEnts = ents
 
+    # Clear window
+    for widget in window.winfo_children():
+        widget.destroy()
+
     # Display ents
     for i in range(len(ents)):
         # Location label
@@ -49,8 +54,12 @@ def update():
         timerLabel.grid(column=1, row=i)
         timerLabel.configure(bg='black', fg='white', font=('Arial', 25, 'bold'))
 
-    window.after(500, update)
+    window.after(100, updateWindowInBg)
+
+# Multithreaded update
+def updateWindowInBg():
+    threading.Thread(target=updateWindow).start()
 
 # Start
-update()
+updateWindowInBg()
 window.mainloop()
