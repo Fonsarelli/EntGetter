@@ -18,16 +18,17 @@ class EntGetter:
 		}
 
 		# Request messages from channel
-		response = requests.get('https://discord.com/api/v9/channels/1166753438177173534/messages', headers=headers)
-		response.raise_for_status()
+		events = []
+		try:
+			response = requests.get('https://discord.com/api/v9/channels/1166753438177173534/messages', headers=headers)
+		except requests.exceptions.RequestException:
+			return events
 
 		# Get events from JSON
-		events = []
-		if response.status_code != 204:
-			messages = json.loads(response.text)
-			for value in messages:
-				events.append([value['content'], value['timestamp']])
-			events.reverse()
+		messages = json.loads(response.text)
+		for value in messages:
+			events.append([value['content'], value['timestamp']])
+		events.reverse()
 
 		return events
 
