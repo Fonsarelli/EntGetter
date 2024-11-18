@@ -25,10 +25,13 @@ class EntGetter:
 			return events
 
 		# Get events from JSON
-		messages = json.loads(response.text)
-		for value in messages:
-			events.append([value['content'], value['timestamp']])
-		events.reverse()
+		try:
+			messages = json.loads(response.text)
+			for value in messages:
+				events.append([value['content'], value['timestamp']])
+			events.reverse()
+		except ValueError:
+			return events
 
 		return events
 
