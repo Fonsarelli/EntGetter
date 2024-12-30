@@ -27,10 +27,16 @@ class EntGetter:
 		# Get events from JSON
 		try:
 			messages = json.loads(response.text)
-			for value in messages:
-				events.append([value['content'], value['timestamp']])
+
+			# Check for error
+			if 'message' in messages:
+				return "Error"
+
+			# Append events to list
+			for message in messages:
+				events.append([message['content'], message['timestamp']])
 			events.reverse()
-		except ValueError:
+		except:
 			return events
 
 		return events
@@ -44,6 +50,10 @@ class EntGetter:
 		# Get events
 		events = self.__get_events()
 
+		# Check for error
+		if events == "Error":
+			return [[events, currentTime]]
+
 		# Filter events
 		ents = []
 		for event in events:
@@ -53,8 +63,9 @@ class EntGetter:
 		# Get ent locations
 		locations = []
 		for ent in ents:
-			location = ent[0].split()[2].replace('*', '')
+			location = ent[0].split("**")[1]
 			time = datetime.strptime(ent[1].split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
+			
 			timeDifference = (currentTime - time).total_seconds()
 			if (timeDifference < maxAge):
 				locations.append([location, time])

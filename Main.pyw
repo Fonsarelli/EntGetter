@@ -16,10 +16,11 @@ notification = pygame.mixer.Sound('Assets/Sounds/ent-notification.wav')
 
 # Set window properties
 window = Tk()
-window.title('Ent')
+window.title('Ent Getter')
 window.geometry('200x1010')
 window.iconbitmap(default='Assets/Images/ent.ico')
 window.configure(background='black')
+labels = []
 
 # Update loop
 def updateWindow():
@@ -37,22 +38,31 @@ def updateWindow():
             notification.play()
     previousEnts = ents
 
-    # Clear window
-    for widget in window.winfo_children():
-        widget.destroy()
-
     # Display ents
     for i in range(len(ents)):
-        # Location label
-        locationLabel = Label(window, text=ents[i][0])
-        locationLabel.grid(column=0, row=i)
-        locationLabel.configure(bg='black', fg='white', font=('Arial', 25, 'bold'))
+        # Check if label exists
+        if (len(labels) > i):
+            # Set existing label text
+            labels[i][0]['text'] = ents[i][0]
+            labels[i][1]['text'] = int((currentTime - ents[i][1]).total_seconds())
+        else:
+            # New location label
+            locationLabel = Label(window, text=ents[i][0])
+            locationLabel.grid(column=0, row=i)
+            locationLabel.configure(bg='black', fg='white', font=('Arial', 20, 'bold'))
 
-        # Timer label
-        timer = int((currentTime - ents[i][1]).total_seconds())
-        timerLabel = Label(window, text=timer)
-        timerLabel.grid(column=1, row=i)
-        timerLabel.configure(bg='black', fg='white', font=('Arial', 25, 'bold'))
+            # New timer label
+            timerLabel = Label(window, text=int((currentTime - ents[i][1]).total_seconds()))
+            timerLabel.grid(column=1, row=i)
+            timerLabel.configure(bg='black', fg='white', font=('Arial', 20, 'bold'))
+
+            # Add label references to list
+            labels.append([locationLabel, timerLabel])
+
+    # Clear unused labels
+    for i in range(len(ents), len(labels)):
+        labels[i][0]['text'] = ""
+        labels[i][1]['text'] = ""
 
     window.after(100, updateWindowInBg)
 
